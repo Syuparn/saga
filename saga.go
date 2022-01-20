@@ -15,6 +15,18 @@ type Saga struct {
 	compensations []Compensation
 }
 
+// Run runs the recieved function. Raised error is kept inside.
+// If any error has already raised in saga, it does nothing.
+func (s *Saga) Run(f func() error) {
+	if s.HasError() {
+		return
+	}
+
+	if err := f(); err != nil {
+		s.errors = append(s.errors, err)
+	}
+}
+
 // AddCompensation adds a compensating transaction to the saga.
 func (s *Saga) AddCompensation(c Compensation) {
 	s.compensations = append(s.compensations, c)
@@ -60,4 +72,10 @@ func (s *Saga) HasError() bool {
 // New creates a new saga.
 func New() *Saga {
 	return &Saga{}
+}
+
+// Run runs the recieved function in saga. Raised error is kept inside saga.
+// If any error has already raised in saga, it does nothing.
+func Run(s *Saga, f func() error) {
+	s.Run(f)
 }
