@@ -314,3 +314,56 @@ func TestRun(t *testing.T) {
 		})
 	}
 }
+
+func TestMake(t *testing.T) {
+	tests := []struct {
+		name           string
+		saga           *Saga
+		f              func() (string, error)
+		expected       string
+		expectedErrors []error
+	}{
+		{
+			"function runs and succeeds",
+			&Saga{},
+			func() (string, error) { return "success", nil },
+			"success",
+			[]error{},
+		},
+		{
+			"function runs and fails",
+			&Saga{},
+			func() (string, error) { return "", xerrors.Errorf("failed") },
+			"",
+			[]error{xerrors.Errorf("failed")},
+		},
+		{
+			"if error is already raised, run does nothing",
+			&Saga{
+				errors: []error{xerrors.Errorf("previous error")},
+			},
+			func() (string, error) {
+				t.Fatalf("this must not be called!")
+				return "", xerrors.Errorf("failed")
+			},
+			"",
+			[]error{xerrors.Errorf("previous error")},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt // pin
+
+		t.Run(tt.name, func(t *testing.T) {
+			actual := Make(tt.saga, tt.f)
+			actualErrors := tt.saga.errors
+
+			require.Equal(t, tt.expected, actual)
+
+			require.Equal(t, len(tt.expectedErrors), len(actualErrors), "number of errors are different")
+			for i, e := range tt.expectedErrors {
+				require.EqualError(t, actualErrors[i], e.Error())
+			}
+		})
+	}
+}

@@ -79,3 +79,22 @@ func New() *Saga {
 func Run(s *Saga, f func() error) {
 	s.Run(f)
 }
+
+// Make runs the recieved function in saga and return value if the function succeeded.
+// Raised error is kept inside saga.
+// If any error has already raised in saga, it does nothing.
+//
+// NOTE: due to the type parameter limitation, method Saga.Make is not provided yet.
+func Make[T any](s *Saga, f func() (T, error)) T {
+	if s.HasError() {
+		// NOTE: return zero value of type T
+		var zero T
+		return zero
+	}
+
+	val, err := f()
+	if err != nil {
+		s.errors = append(s.errors, err)
+	}
+	return val
+}
