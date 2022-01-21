@@ -16,7 +16,7 @@ type Saga struct {
 }
 
 // Run runs the recieved function. Raised error is kept inside.
-// If any error has already raised in saga, it does nothing.
+// If any error has already been raised in saga, it does nothing.
 func (s *Saga) Run(f func() error) {
 	if s.HasError() {
 		return
@@ -28,7 +28,12 @@ func (s *Saga) Run(f func() error) {
 }
 
 // AddCompensation adds a compensating transaction to the saga.
+// if any error has already been raised in saga, it adds nothing.
 func (s *Saga) AddCompensation(c Compensation) {
+	if s.HasError() {
+		return
+	}
+
 	s.compensations = append(s.compensations, c)
 }
 
@@ -75,14 +80,14 @@ func New() *Saga {
 }
 
 // Run runs the recieved function in saga. Raised error is kept inside saga.
-// If any error has already raised in saga, it does nothing.
+// If any error has already been raised in saga, it does nothing.
 func Run(s *Saga, f func() error) {
 	s.Run(f)
 }
 
 // Make runs the recieved function in saga and return value if the function succeeded.
 // Raised error is kept inside saga.
-// If any error has already raised in saga, it does nothing.
+// If any error has already been raised in saga, it does nothing.
 //
 // NOTE: due to the type parameter limitation, method Saga.Make is not provided yet.
 func Make[T any](s *Saga, f func() (T, error)) T {

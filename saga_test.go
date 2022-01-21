@@ -96,6 +96,12 @@ func TestSagaAddCompensation(t *testing.T) {
 			compensations[2],
 			[]Compensation{compensations[0], compensations[1], compensations[2]},
 		},
+		{
+			"if any error is already raised, compensation is not added",
+			&Saga{errors: []error{xerrors.Errorf("error")}},
+			compensations[0],
+			[]Compensation{},
+		},
 	}
 
 	for _, tt := range tests {
