@@ -11,12 +11,12 @@ Example:
 
 ```go
 func (b *bookingApp) Book() (*Bookings, error) {
-    // create new saga
+	// create new saga
 	sg := saga.New()
 
-    // run some process
+	// run some process
 	outboundTicket := saga.Make(sg, b.flightBookingService.Book("Tokyo", "Seoul", mustParseTime("2022/01/01 10:00")))
-    // add compensation transaction, which will run if any following process failed
+	// add compensation transaction, which will run if any following process failed
 	sg.AddCompensation(b.flightBookingService.Cancel(outboundTicket))
 
 	inboundTicket := saga.Make(sg, b.flightBookingService.Book("Seoul", "Tokyo", mustParseTime("2022/01/02 21:00")))
@@ -24,7 +24,7 @@ func (b *bookingApp) Book() (*Bookings, error) {
 
 	room := saga.Make(sg, b.hotelBookingService.Book(mustParseTime("2022/01/01 19:00")))
 
-    // run all compensating transactions
+	// run all compensating transactions
 	sg.Compensate()
 
 	if sg.HasError() {
